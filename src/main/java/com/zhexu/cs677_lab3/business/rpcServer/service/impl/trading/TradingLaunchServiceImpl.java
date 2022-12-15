@@ -1,7 +1,7 @@
 package com.zhexu.cs677_lab3.business.rpcServer.service.impl.trading;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zhexu.cs677_lab3.api.bean.MarketTransaction;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
 import com.zhexu.cs677_lab3.api.bean.Role;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;

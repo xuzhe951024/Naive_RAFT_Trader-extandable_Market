@@ -1,7 +1,7 @@
 package com.zhexu.cs677_lab3.business.rpcServer.service.impl;
 
 
-import com.zhexu.cs677_lab3.api.bean.Person;
+import com.zhexu.cs677_lab3.api.bean.basic.Person;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.business.rpcServer.service.HelloService;
 

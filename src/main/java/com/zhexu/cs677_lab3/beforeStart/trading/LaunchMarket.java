@@ -1,6 +1,6 @@
 package com.zhexu.cs677_lab3.beforeStart.trading;
 
-import com.zhexu.cs677_lab3.api.bean.MarketTransaction;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
 import com.zhexu.cs677_lab3.api.bean.Role;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.ProxyFactory;

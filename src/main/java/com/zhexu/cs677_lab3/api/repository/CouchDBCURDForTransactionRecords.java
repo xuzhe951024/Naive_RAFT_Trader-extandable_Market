@@ -1,5 +1,7 @@
 package com.zhexu.cs677_lab3.api.repository;
 
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
+
 /**
  * @project: CS677_LAB3
  * @description:
@@ -8,4 +10,7 @@ package com.zhexu.cs677_lab3.api.repository;
  **/
 public interface CouchDBCURDForTransactionRecords {
     //TODO implement
+    MarketTransaction add(MarketTransaction transaction);
+
+    MarketTransaction get(String transactionId);
 }

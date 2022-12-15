@@ -1,6 +1,6 @@
 package com.zhexu.cs677_lab3.api.bean.config.repository;
 
-import com.zhexu.cs677_lab3.api.bean.MarketTransaction;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.api.bean.config.repository.databaseInfo.CouchDBInfoForTransactionRecords;
 import com.zhexu.cs677_lab3.api.repository.CouchDBCURDForTransactionRecords;
@@ -33,9 +33,13 @@ public class CouchDBConfigForTransactionRecords {
 
     @Bean(name = "CouchDBCURDForTransactionRecords")
     public CouchDBCURDForTransactionRecords couchDbConnector() throws Exception {
-        HttpClient httpClient = new StdHttpClient.Builder().url(couchDBInfoForTransactionRecords.getHost() + ":" + couchDBInfoForTransactionRecords.getPort())
-                .username(couchDBInfoForTransactionRecords.getUsername()).connectionTimeout(TEN_THOUSAND).socketTimeout(ONE_MILLION)
-                .password(couchDBInfoForTransactionRecords.getPassword()).build();
+        StdHttpClient.Builder builder = new StdHttpClient.Builder();
+        builder.url(couchDBInfoForTransactionRecords.getHost() + ":" + couchDBInfoForTransactionRecords.getPort());
+        builder.username(couchDBInfoForTransactionRecords.getUsername());
+        builder.connectionTimeout(TEN_THOUSAND);
+        builder.socketTimeout(ONE_MILLION);
+        builder.password(couchDBInfoForTransactionRecords.getPassword());
+        HttpClient httpClient = builder.build();
         CouchDbInstance couchDbInstance = new StdCouchDbInstance(httpClient);
         CouchDbConnector couchDbConnector = new StdCouchDbConnector(couchDBInfoForTransactionRecords.getDatabase() +
                 "_" +

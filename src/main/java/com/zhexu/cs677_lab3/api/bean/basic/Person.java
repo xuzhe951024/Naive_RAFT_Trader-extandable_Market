@@ -1,4 +1,4 @@
-package com.zhexu.cs677_lab3.api.bean;
+package com.zhexu.cs677_lab3.api.bean.basic;
 
 
 

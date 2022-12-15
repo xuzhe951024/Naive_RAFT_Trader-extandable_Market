@@ -1,6 +1,6 @@
 package com.zhexu.cs677_lab3.api.restful.controller;
 
-import com.zhexu.cs677_lab3.api.bean.MarketTransaction;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
 import com.zhexu.cs677_lab3.api.bean.Role;
 import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;

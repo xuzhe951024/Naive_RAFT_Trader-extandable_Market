@@ -1,7 +1,7 @@
-package com.zhexu.cs677_lab3.api.bean;
+package com.zhexu.cs677_lab3.api.bean.basic.dataEntities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
-import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.RaftTransBase;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -16,6 +16,9 @@ import static com.zhexu.cs677_lab3.constants.Consts.TRANSACTION_ROLLING_BACK_PRE
  * @create: 12/10/22
  **/
 public class MarketTransaction extends RaftTransBase implements Serializable {
+    @JsonProperty(value = "_rev")
+    private String revision;
+    @JsonProperty(value = "_id")
     private UUID transactionId = UUID.randomUUID();
     private UUID buyer;
     private UUID seller;
@@ -119,6 +122,14 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
 
     public Long getLocalTimeStamp() {
         return localTimeStamp;
+    }
+
+    public String getRevision() {
+        return revision;
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
     }
 
     @Override

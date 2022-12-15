@@ -34,9 +34,13 @@ public class CouchDBConfigForRaftEvents {
 
     @Bean(name = "CouchDbCURDForRaftEvents")
     public CouchDBCURDForRaftEvents couchDbConnector() throws Exception {
-        HttpClient httpClient = new StdHttpClient.Builder().url(couchDBInfoForRaftEvents.getHost() + ":" + couchDBInfoForRaftEvents.getPort())
-                .username(couchDBInfoForRaftEvents.getUsername()).connectionTimeout(TEN_THOUSAND).socketTimeout(ONE_MILLION)
-                .password(couchDBInfoForRaftEvents.getPassword()).build();
+        StdHttpClient.Builder builder = new StdHttpClient.Builder();
+        builder.url(couchDBInfoForRaftEvents.getHost() + ":" + couchDBInfoForRaftEvents.getPort());
+        builder.username(couchDBInfoForRaftEvents.getUsername());
+        builder.connectionTimeout(TEN_THOUSAND);
+        builder.socketTimeout(ONE_MILLION);
+        builder.password(couchDBInfoForRaftEvents.getPassword());
+        HttpClient httpClient = builder.build();
         CouchDbInstance couchDbInstance = new StdCouchDbInstance(httpClient);
         CouchDbConnector couchDbConnector = new StdCouchDbConnector(couchDBInfoForRaftEvents.getDatabase() +
                 "_" +
