@@ -2,7 +2,9 @@ package com.zhexu.cs677_lab3.beforeStart;
 
 import com.zhexu.cs677_lab3.api.bean.Role;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
+import com.zhexu.cs677_lab3.api.repository.CouchDBCURDForStock;
 import com.zhexu.cs677_lab3.business.rpcServer.RpcServer;
+import com.zhexu.cs677_lab3.utils.SpringContextUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -34,7 +36,15 @@ public class RunBeforeStart implements CommandLineRunner {
     @Override
     public void run(String... args) {
         SingletonFactory.setRpcBufferSize(Integer.parseInt(args[TWO]));
+        SingletonFactory.setRunMode(Integer.parseInt(args[FOUR]));
         Role role = SingletonFactory.getRole();
+
+        CouchDBCURDForStock couchDBCURDForStock = SpringContextUtils.getBean(CouchDBCURDForStock.class);
+
+        role.getStockMap().forEach((k, v) -> {
+            couchDBCURDForStock.addStock(v);
+        });
+
         RpcServer rpcServer = new RpcServer();
         log.debug("Thread pool size: "+
                 threadPoolTaskExecutor.getPoolSize() +

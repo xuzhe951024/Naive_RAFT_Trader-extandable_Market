@@ -9,7 +9,7 @@ import java.util.List;
  * @create: 10/28/22
  **/
 public class ProfilesBean {
-    private Integer peerNumber;
+    private Integer traderNumber;
     private Integer sellerNumber;
     private Integer buyerNumber;
     private Integer port;
@@ -21,6 +21,7 @@ public class ProfilesBean {
     private Integer sleepBeforeStart;
     private Integer numberOfTests;
     private Integer rpcBuffSize;
+    private Integer runMode;
 
     public Integer getRpcBuffSize() {
         return rpcBuffSize;
@@ -110,22 +111,30 @@ public class ProfilesBean {
         this.sleepBeforeStart = sleepBeforeStart;
     }
 
-    public Integer getPeerNumber() {
-        return peerNumber;
+    public Integer getTraderNumber() {
+        return traderNumber;
     }
 
-    public void setPeerNumber(Integer peerNumber) {
-        this.peerNumber = peerNumber;
+    public void setTraderNumber(Integer traderNumber) {
+        this.traderNumber = traderNumber;
     }
 
     public Boolean involvedRoleNum() {
-        return this.sellerNumber > this.peerNumber || this.buyerNumber > this.peerNumber;
+        return this.sellerNumber > this.traderNumber || this.buyerNumber > this.traderNumber;
+    }
+
+    public Integer getRunMode() {
+        return runMode;
+    }
+
+    public void setRunMode(Integer runMode) {
+        this.runMode = runMode;
     }
 
     @Override
     public String toString() {
         return "ProfilesBean{" +
-                "peerNumber=" + peerNumber +
+                "traderNumber=" + traderNumber +
                 ", sellerNumber=" + sellerNumber +
                 ", buyerNumber=" + buyerNumber +
                 ", port=" + port +
@@ -137,6 +146,7 @@ public class ProfilesBean {
                 ", sleepBeforeStart=" + sleepBeforeStart +
                 ", numberOfTests=" + numberOfTests +
                 ", rpcBuffSize=" + rpcBuffSize +
+                ", runMode=" + runMode +
                 '}';
     }
 }

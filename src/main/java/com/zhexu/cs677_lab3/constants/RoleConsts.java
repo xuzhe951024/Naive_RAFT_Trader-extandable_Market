@@ -6,8 +6,13 @@ package com.zhexu.cs677_lab3.constants;
  * @author: zhexu
  * @create: 12/4/22
  **/
-public class RaftConsts {
+public class RoleConsts {
     public static final String RAFT_ROLE_FOLLOWER = "follower";
     public static final String RAFT_ROLE_CANDIDATE = "candidate";
     public static final String RAFT_ROLE_LEADER = "leader";
+
+    public static final String MARKET_BUYER = "buyer";
+    public static final String MARKET_SELLER = "seller";
+    public static final String MARKET_STORE = "store";
+    public static final String MARKET_PROXY = "proxy";
 }

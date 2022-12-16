@@ -1,4 +1,4 @@
-package com.zhexu.cs677_lab3.api.bean.basic;
+package com.zhexu.cs677_lab3.api.bean.response.basic;
 
 import com.zhexu.cs677_lab3.constants.ResponseCode;
 

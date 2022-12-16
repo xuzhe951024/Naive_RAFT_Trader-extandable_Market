@@ -1,6 +1,7 @@
 package com.zhexu.cs677_lab3.api.bean.basic.dataEntities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
 import org.springframework.util.StringUtils;
 
@@ -19,7 +20,7 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
     @JsonProperty(value = "_rev")
     private String revision;
     @JsonProperty(value = "_id")
-    private UUID transactionId = UUID.randomUUID();
+    private String transactionId = UUID.randomUUID().toString();
     private UUID buyer;
     private UUID seller;
     private Product product;
@@ -30,11 +31,14 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
     private UUID eventId = UUID.randomUUID();
     private Long localTimeStamp = System.currentTimeMillis();
 
-    public UUID getTransactionId() {
+    private Address buyerAdd;
+
+
+    public String getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(UUID transactionId) {
+    public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
@@ -118,6 +122,7 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
         this.remark = TRANSACTION_ROLLING_BACK_PREFIX + rollBackTransaction.getTransactionId();
         this.number = -rollBackTransaction.getNumber();
         this.successful = Boolean.FALSE;
+        this.buyerAdd = rollBackTransaction.getBuyerAdd();
     }
 
     public Long getLocalTimeStamp() {
@@ -132,10 +137,19 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
         this.revision = revision;
     }
 
+    public Address getBuyerAdd() {
+        return buyerAdd;
+    }
+
+    public void setBuyerAdd(Address buyerAdd) {
+        this.buyerAdd = buyerAdd;
+    }
+
     @Override
     public String toString() {
         return "MarketTransaction{" +
-                "transactionId=" + transactionId +
+                "revision='" + revision + '\'' +
+                ", transactionId='" + transactionId + '\'' +
                 ", buyer=" + buyer +
                 ", seller=" + seller +
                 ", product=" + product +
@@ -144,6 +158,8 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
                 ", remark='" + remark + '\'' +
                 ", stock=" + stock +
                 ", eventId=" + eventId +
+                ", localTimeStamp=" + localTimeStamp +
+                ", buyerAdd=" + buyerAdd +
                 '}';
     }
 }

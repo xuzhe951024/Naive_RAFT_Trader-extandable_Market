@@ -1,7 +1,7 @@
 package com.zhexu.cs677_lab3.business.rpcServer.service.raft;
 
 import com.zhexu.cs677_lab3.api.bean.RaftEvents.election.RaftCandidateVoteReq;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 
 /**
  * @project: CS677_LAB3

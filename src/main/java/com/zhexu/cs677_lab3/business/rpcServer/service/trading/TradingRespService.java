@@ -7,6 +7,6 @@ package com.zhexu.cs677_lab3.business.rpcServer.service.trading;
  * @create: 12/12/22
  **/
 public interface TradingRespService {
-    Boolean checkIfProductAvailable(Integer productId, Integer stock);
-    Integer consumeProduct(Integer productId, Integer number);
+    Boolean checkIfProductAvailable(String sellerId, Integer productId, Integer stock);
+    Integer consumeProduct(String sellerId, Integer productId, Integer number);
 }

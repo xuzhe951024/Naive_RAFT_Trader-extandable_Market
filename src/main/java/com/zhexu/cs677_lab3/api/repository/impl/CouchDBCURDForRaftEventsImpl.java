@@ -37,7 +37,7 @@ public class CouchDBCURDForRaftEventsImpl extends CouchDbRepositorySupport<RaftL
 
         add(logItem);
 
-        return get(logItem.getId());
+        return querayByTermAndIndex(logItem);
     }
 
 

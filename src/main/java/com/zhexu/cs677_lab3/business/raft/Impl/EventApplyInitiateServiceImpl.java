@@ -46,7 +46,7 @@ public class EventApplyInitiateServiceImpl implements EventApplyInitiateService 
         if (!peer.isLeader()) {
             log.error("Broadcast ERR: Peer: " + ENTER +
                     peer.getSelfAddress().getDomain() + ENTER +
-                    "is a " + peer.getRaftRole() +
+                    "is a " + peer.getPositionName() +
                     "instead of a leader!");
             return;
         }

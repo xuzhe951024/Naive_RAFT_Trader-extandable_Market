@@ -5,6 +5,7 @@ import com.zhexu.cs677_lab3.api.bean.Role;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.RaftTransBase;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.Stock;
 import com.zhexu.cs677_lab3.api.bean.config.InitConfigForRole;
 import com.zhexu.cs677_lab3.api.bean.config.TimerConfig;
 import com.zhexu.cs677_lab3.utils.NetworkLatencyDetector;
@@ -12,7 +13,7 @@ import com.zhexu.cs677_lab3.utils.NetworkLatencyDetector;
 import java.util.*;
 import java.util.logging.FileHandler;
 
-import static com.zhexu.cs677_lab3.constants.Consts.SERIALIZATION_BUF_SIZE;
+import static com.zhexu.cs677_lab3.constants.Consts.*;
 
 
 /**
@@ -21,6 +22,7 @@ import static com.zhexu.cs677_lab3.constants.Consts.SERIALIZATION_BUF_SIZE;
  * @author: zhexu
  * @create: 10/27/22
  **/
+
 public class SingletonFactory {
     private volatile static Role role;
     private volatile static Map<String, FileHandler> fileHandlerMap;
@@ -34,6 +36,9 @@ public class SingletonFactory {
     private volatile static long transactionTime = 0L;
 
     private volatile static int testNum;
+
+    private volatile static int runMode;
+
 
 
     public static Long getNetworkLatency() {
@@ -93,32 +98,24 @@ public class SingletonFactory {
                 SingletonFactory.networkLatency /= neighbouMap.size();
 
                 if (null == role) {
-                    Map<Integer, Product> products = new HashMap<>();
-                    Map<Product, Integer> stocks = new HashMap<>();
+                    Map<Integer, Product> products = initConfigForRole.getProducts();
+                    Map<String, Stock> stocks = initConfigForRole.getStock();
 
-                    if (initConfigForRole.isBuyer()){
-                        products = initConfigForRole.getProducts();
-                    }
 
-                    if (initConfigForRole.isSeller()){
-                        stocks = initConfigForRole.getStock();
-                    }
 
                     role = new Role(UUID.fromString(initConfigForRole.getId()),
                             neighbouMap,
                             initConfigForRole.getSelfAdd(),
                             products,
                             stocks);
-                    RaftTransBase raftTransBase = new RaftTransBase();
-                    raftTransBase.setIndex(0l);
-                    raftTransBase.setTerm(0l);
-                    role.setRaftBase(raftTransBase);
-                    role.becomeFollwer();
-                    if (initConfigForRole.isBuyer()){
-                        role.becomeBuyer();
-                    }
-                    if (initConfigForRole.isSeller()){
-                        role.becomeSeller();
+                    if (initConfigForRole.isBuyer() || initConfigForRole.isSeller()){
+                        role.setPositionName(initConfigForRole.getPositionName());
+                    } else {
+                        RaftTransBase raftTransBase = new RaftTransBase();
+                        raftTransBase.setIndex(0l);
+                        raftTransBase.setTerm(0l);
+                        role.setRaftBase(raftTransBase);
+                        role.becomeFollwer();
                     }
                 }
                 role.setLeaderID(null);
@@ -172,5 +169,21 @@ public class SingletonFactory {
 
     public static void setTestNum(int testNum) {
         SingletonFactory.testNum = testNum;
+    }
+
+    public static int getRunMode() {
+        return runMode;
+    }
+
+    public static void setRunMode(int runMode) {
+        SingletonFactory.runMode = runMode;
+    }
+
+    public static boolean runWithCache(){
+        return RUN_WITH_CACHE.intValue() == SingletonFactory.getRunMode();
+    }
+
+    public static boolean runWithoutCache(){
+        return RUN_WITHOUT_CACHE.intValue() == SingletonFactory.getRunMode();
     }
 }

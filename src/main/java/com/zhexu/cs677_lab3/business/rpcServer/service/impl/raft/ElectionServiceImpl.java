@@ -2,12 +2,12 @@ package com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft;
 
 import com.zhexu.cs677_lab3.api.bean.RaftEvents.election.RaftCandidateVoteReq;
 import com.zhexu.cs677_lab3.api.bean.RaftEvents.election.RaftVoterResp;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.api.bean.config.TimerConfig;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.ProxyFactory;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.RPCInvocationHandler;
-import com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft.basic.BasicImpl;
+import com.zhexu.cs677_lab3.business.rpcServer.service.impl.basic.BasicImpl;
 import com.zhexu.cs677_lab3.business.rpcServer.service.raft.ElectionService;
 import com.zhexu.cs677_lab3.business.rpcServer.service.raft.VoteCollectingService;
 import com.zhexu.cs677_lab3.constants.ResponseCode;
@@ -61,7 +61,7 @@ public class ElectionServiceImpl extends BasicImpl implements ElectionService {
 
         if(!peer.isFollower()){
             log.debug("Expired " +
-                    peer.getRaftRole() +
+                    peer.getPositionName() +
                     " with term and index of: " +
                     peer.getRaftBase());
             peer.becomeFollwer();

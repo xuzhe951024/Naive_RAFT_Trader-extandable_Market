@@ -4,13 +4,16 @@ import com.esotericsoftware.yamlbeans.YamlReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.Stock;
 import com.zhexu.cs677_lab3.api.bean.config.InitConfigForRole;
 import com.zhexu.cs677_lab3.api.bean.config.basic.ProfilesBean;
 import com.zhexu.cs677_lab3.api.bean.freemarker.DockerComposeFileModel;
+import com.zhexu.cs677_lab3.api.repository.CouchDBCURDForStock;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 
 
 import java.io.*;
@@ -27,6 +30,7 @@ import static com.zhexu.cs677_lab3.constants.Consts.*;
  **/
 @Log4j2
 public class ProfilesGenerator {
+
     public static void main(String[] args) throws IOException, TemplateException {
         YamlReader reader = new YamlReader(new FileReader(args[0]));
         ProfilesBean profilesBean = reader.read(ProfilesBean.class);
@@ -37,68 +41,105 @@ public class ProfilesGenerator {
         }
 
         Integer sleepBeforeStart = profilesBean.getSleepBeforeStart();
-        Integer maxJump = profilesBean.getMaxJump();
-        Map<UUID, Address> uuidAddressMap = createUUIDAddressMap(profilesBean.getPeerNumber(),
+        Map<UUID, Address> tradersUuidAddressMap = createUUIDAddressMap(
+                ZERO,
+                profilesBean.getTraderNumber(),
                 profilesBean.getPort(),
                 profilesBean.getDeployOnSingleComputer());
 
-        List<InitConfigForRole> roleInitConfigList = createNeighbours(uuidAddressMap);
 
-        List<InitConfigForRole> readyList = addProductAndStock(roleInitConfigList,
+        Map<UUID, Address> sellerAndBuyerAddressMap = createUUIDAddressMap(
+                profilesBean.getTraderNumber(),
+                profilesBean.getBuyerNumber() + profilesBean.getSellerNumber(),
+                profilesBean.getPort() + profilesBean.getTraderNumber() + ONE,
+                profilesBean.getDeployOnSingleComputer());
+
+        List<InitConfigForRole> traders = createNeighbours(tradersUuidAddressMap);
+        List<InitConfigForRole> sellerAndBuyers = new LinkedList<>() {{
+            sellerAndBuyerAddressMap.forEach((k, v) -> {
+                InitConfigForRole role = new InitConfigForRole();
+                role.setId(k.toString());
+                role.setSelfAdd(v);
+                role.setNeighbours(new HashMap<>() {{
+                    traders.forEach((trader) -> {
+                        put(trader.getId(), trader.getSelfAdd());
+                    });
+                }});
+                add(role);
+            });
+        }};
+
+        List<InitConfigForRole> readyList = addProductAndStock(
+                traders,
+                sellerAndBuyers,
                 profilesBean.getProductNameList(),
                 profilesBean.getMaxmumStok(),
                 profilesBean.getBuyerNumber(),
                 profilesBean.getSellerNumber());
 
-        generateProfiles(readyList,
+        generateProfiles(
+                readyList,
                 profilesBean.getDeployOnSingleComputer(),
-                sleepBeforeStart, maxJump,
+                sleepBeforeStart,
                 profilesBean.getMaxmumStok(),
                 profilesBean.getNumberOfTests(),
-                profilesBean.getRpcBuffSize());
+                profilesBean.getRpcBuffSize(),
+                profilesBean.getRunMode());
     }
 
-    private static List<InitConfigForRole> addProductAndStock(List<InitConfigForRole> roleInitConfigList, List<String> productNameList, Integer maxmumStok, Integer byerNum, Integer sellerNum) {
+    private static List<InitConfigForRole> addProductAndStock(List<InitConfigForRole> traderList,
+                                                              List<InitConfigForRole> sellerBuyerList,
+                                                              List<String> productNameList,
+                                                              Integer maxmumStok,
+                                                              Integer byerNum,
+                                                              Integer sellerNum) {
         Random ra = new Random();
         Integer productListSize = productNameList.size();
 
-        Map<Integer, Product> productMap = new HashMap<>(){{
+        Map<Integer, Product> productMap = new HashMap<>() {{
             for (int i = 0; i < productListSize; i++) {
                 put(i, new Product(i, productNameList.get(i)));
             }
         }};
 
-        roleInitConfigList.forEach((e) -> {
-            e.setProducts(productMap);
-
-        });
-
         for (int i = 0; i < byerNum; i++) {
-            Integer buyerIndex = ra.nextInt(byerNum);
-            while (roleInitConfigList.get(buyerIndex).isBuyer()){
-                buyerIndex = ra.nextInt(byerNum);
-            }
-            log.info(roleInitConfigList.get(buyerIndex).getSelfAdd().getDomain() +
+            log.info(sellerBuyerList.get(i).getSelfAdd().getDomain() +
                     "is assigned as buyer now");
-            roleInitConfigList.get(buyerIndex).setBuyer(Boolean.TRUE);
+            sellerBuyerList.get(i).becomeBuyer();
         }
 
-        for (int i = 0; i < sellerNum; i++) {
-            Integer sellerIndex = ra.nextInt(sellerNum);
-            InitConfigForRole role = roleInitConfigList.get(sellerIndex);
-
-            while (role.isSeller()){
-                sellerIndex = ra.nextInt(sellerNum);
-                role = roleInitConfigList.get(sellerIndex);
+        Map<String, Stock> stockMap = new HashMap<>();
+        Map<Product, Integer> stockItem = new HashMap<>() {{
+            for (Product product : productMap.values()) {
+                put(product, ZERO);
             }
+        }};
 
-            role.setSeller(Boolean.TRUE);
-            Integer productId = ra.nextInt(productListSize);
-            role.getStock().put(productMap.get(productId), ra.nextInt(maxmumStok));
+        for (int i = byerNum; i < byerNum + sellerNum; i++) {
+            InitConfigForRole role = sellerBuyerList.get(i);
+
+            role.becomeSeller();
+
+            Stock stockObj = new Stock();
+            stockObj.setSellerId(role.getId());
+            stockObj.setStock(stockItem);
+            stockMap.put(role.getId(), stockObj);
+
             log.info(role.getSelfAdd().getDomain() + "is assigned as seller now");
         }
 
-        return roleInitConfigList;
+        traderList.forEach((e) -> {
+            e.setProducts(productMap);
+            e.setStock(stockMap);
+        });
+
+        sellerBuyerList.forEach((e) -> {
+            e.setProducts(productMap);
+        });
+
+        traderList.addAll(sellerBuyerList);
+
+        return traderList;
     }
 
 
@@ -112,20 +153,19 @@ public class ProfilesGenerator {
             role.setId(k.toString());
             role.setSelfAdd(v);
             role.setNeighbours(new HashMap<>());
-            role.setStock(new HashMap<Product, Integer>());
             roleList.add(role);
         });
 
         for (int i = 0; i < peerNum; i++) {
-            for (int j = i+1; j < peerNum; j++) {
+            for (int j = i + 1; j < peerNum; j++) {
                 roleList.get(i).putNeighbours(
                         roleList.get(j).getId(),
                         roleList.get(j).getSelfAdd()
                 );
 
                 roleList.get(j).putNeighbours(
-                  roleList.get(i).getId(),
-                  roleList.get(i).getSelfAdd()
+                        roleList.get(i).getId(),
+                        roleList.get(i).getSelfAdd()
                 );
 
             }
@@ -134,9 +174,13 @@ public class ProfilesGenerator {
         return roleList;
     }
 
-    private static Map<UUID, Address> createUUIDAddressMap(int peerNumber, Integer port, Boolean deployOnSingleComputer) {
+    private static Map<UUID, Address> createUUIDAddressMap(
+            int indexStart,
+            int peerNumber,
+            Integer port,
+            Boolean deployOnSingleComputer) {
         Map<UUID, Address> uuidAddressMap = new HashMap<>() {{
-            for (int i = 0; i < peerNumber; i++) {
+            for (int i = indexStart; i < indexStart + peerNumber; i++) {
                 Address address = new Address();
                 address.setDomain(DOMAIN_PREFIX + i + DOMAIN_SUFIX);
                 address.setPort(deployOnSingleComputer ? port + i : port);
@@ -147,13 +191,13 @@ public class ProfilesGenerator {
         return uuidAddressMap;
     }
 
-    private static void generateProfiles(List<InitConfigForRole> sellerBuyerNeighbourInitList,
+    private static void generateProfiles(List<InitConfigForRole> readyList,
                                          Boolean deployOnSingleComputer,
                                          Integer sleepBeforeStart,
-                                         Integer maxJump,
                                          Integer maxStock,
                                          Integer numberOfTests,
-                                         Integer rpcBuffSize) throws IOException, TemplateException {
+                                         Integer rpcBuffSize,
+                                         Integer runMode) throws IOException, TemplateException {
 
         StringBuffer hostSB = new StringBuffer();
         StringBuffer argsSB = new StringBuffer();
@@ -166,7 +210,7 @@ public class ProfilesGenerator {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        sellerBuyerNeighbourInitList.forEach((role) -> {
+        readyList.forEach((role) -> {
             role.setMaxStock(maxStock);
             String jsonDir = role.getSelfAdd().getDomain() + SLASH + JSON_PROFILE_DIR_BASE;
             File dir = new File(jsonDir);
@@ -187,6 +231,8 @@ public class ProfilesGenerator {
                     rpcBuffSize +
                     SPACE +
                     maxStock +
+                    SPACE +
+                    runMode +
                     SPACE +
                     SERVER_PORT_ARG +
                     role.getSelfAdd().getPort() * 2;

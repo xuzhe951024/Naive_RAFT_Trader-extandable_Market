@@ -73,29 +73,40 @@ public class LaunchMarket implements CommandLineRunner {
     }
 
     private Boolean startBusiness(){
-        if (!role.isFollower()
-                || !role.isBuyer()
-                || role.isSyncLogInProgress()
-                || null ==  role.getLeaderID()
-                || null == role.getNeighbourPeerMap().get(role.getLeaderID())){
+        if (role.isARaftMember()
+                || null == role.getNeighbourPeerMap()
+                || role.getNeighbourPeerMap().isEmpty()){
             return Boolean.FALSE;
         }
 
-        RPCInvocationHandler handler = new RPCInvocationHandler(role.getNeighbourAdd(role.getLeaderID()));
-        TradingLaunchService tradingLaunchService = ProxyFactory.getInstance(TradingLaunchService.class, handler);
+        role.getNeighbourPeerMap().forEach((k, v) -> {
+            RPCInvocationHandler handler = new RPCInvocationHandler(role.getNeighbourAdd(role.getLeaderID()));
+            TradingLaunchService tradingLaunchService = ProxyFactory.getInstance(TradingLaunchService.class, handler);
 
-        Random random = new Random();
-        MarketTransaction transaction = new MarketTransaction();
-        transaction.setBuyer(role.getId());
-        transaction.setNumber(random.nextInt(SingletonFactory.getMaxStock()));
-        transaction.setProduct(role.getProductMap().get(random.nextInt(role.getProductMapSize())));
+            Random random = new Random();
+            MarketTransaction transaction = new MarketTransaction();
 
-        log.info("Start to send purchase request to leader: " +
-                role.getLeaderID() +
-                "@" +
-                role.getNeighbourAdd(role.getLeaderID()).getDomain());
+            if (role.isBuyer()){
+                transaction.setBuyer(role.getId());
+                transaction.setNumber(random.nextInt(SingletonFactory.getMaxStock()));
+            }
 
-        log.info(tradingLaunchService.launchTradingTransaction(transaction));
+            if (role.isSeller()){
+                transaction.setBuyer(role.getId());
+                transaction.setSeller(role.getId());
+                transaction.setNumber(-SingletonFactory.getMaxStock());
+            }
+
+            transaction.setProduct(role.getProductMap().get(random.nextInt(role.getProductMapSize())));
+
+            log.info("Start to send purchase request to leader: " +
+                    role.getLeaderID() +
+                    "@" +
+                    role.getNeighbourAdd(role.getLeaderID()).getDomain());
+
+            log.info(tradingLaunchService.launchTradingTransaction(transaction));
+        });
+
         return Boolean.TRUE;
     }
 

@@ -8,9 +8,6 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.UUID;
 
-import static com.zhexu.cs677_lab3.constants.Consts.ENTER;
-import static com.zhexu.cs677_lab3.constants.Consts.IMPORTANT_LOG_WRAPPER;
-
 /**
  * @project: CS677_LAB3
  * @description:
@@ -22,7 +19,7 @@ public class MarketTransactionHandlerImpl extends EventHandlerBase {
     private MarketTransaction transactionBean;
     private UUID logId;
     private UUID eventId;
-    private Role peer = SingletonFactory.getRole();
+    private Role role = SingletonFactory.getRole();
 
     /**
      * @param eventBean
@@ -42,9 +39,9 @@ public class MarketTransactionHandlerImpl extends EventHandlerBase {
             return Boolean.FALSE;
         }
 
-        if (!peer.isFollower()) {
+        if (!role.isFollower()) {
             log.info("Peer: " +
-                    peer.getSelfAddress().getDomain() +
+                    role.getSelfAddress().getDomain() +
                     "dose not legally apply the transaction!");
             return Boolean.FALSE;
         }
@@ -53,27 +50,10 @@ public class MarketTransactionHandlerImpl extends EventHandlerBase {
                 saveEventBeanToCouchDb(this.transactionBean, this.logId, this.eventId) +
                 "\nto couchDb");
 
-        if (!peer.isSyncLogInProgress() && transactionBean.getBuyer().equals(peer.getId())) {
-            Long time = System.currentTimeMillis() - transactionBean.getLocalTimeStamp();
-            SingletonFactory.setTransactionTime(SingletonFactory.getTransactionTime() + time);
-            SingletonFactory.setTransactionNum(SingletonFactory.getTransactionNum() + 1);
-
-            log.info(IMPORTANT_LOG_WRAPPER + ENTER +
-                    "Transaction: " +
-                    transactionBean.getTransactionId() +
-                    " takes " +
-                    time +
-                    " ms" +
-                    "\nAvarage transaction time: " +
-                    SingletonFactory.getTransactionTime() / SingletonFactory.getTransactionNum() +
-                    " ms\nTransaction details:" +
-                    transactionBean.toString() +
-                    IMPORTANT_LOG_WRAPPER);
-        }
-
-        if (peer.isSyncLogInProgress() && peer.isSeller() && transactionBean.isMainSeller(peer.getId())) {
-            peer.getStock().put(transactionBean.getProduct(), transactionBean.getStock());
-        }
+        log.info("Now update local stock cache.");
+        role.consumeStockByProductId(transactionBean.getSeller().toString(),
+                transactionBean.getProduct().getProductId(),
+                transactionBean.getNumber());
 
         return Boolean.TRUE;
     }

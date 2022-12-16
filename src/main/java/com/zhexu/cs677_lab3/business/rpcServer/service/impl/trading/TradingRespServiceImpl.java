@@ -20,11 +20,11 @@ public class TradingRespServiceImpl implements TradingRespService {
      * @return
      */
     @Override
-    public Boolean checkIfProductAvailable(Integer productId, Integer stock) {
-        if (!role.isSeller()){
+    public Boolean checkIfProductAvailable(String sellerId, Integer productId, Integer stock) {
+        if (role.isNotARaftMember()){
             return Boolean.FALSE;
         }
-        return role.getStockByProductId(productId) - stock >= 0;
+        return role.getStockByProductId(sellerId, productId) - stock >= 0;
     }
 
     /**
@@ -33,10 +33,10 @@ public class TradingRespServiceImpl implements TradingRespService {
      * @return
      */
     @Override
-    public Integer consumeProduct(Integer productId, Integer number) {
-        if(!role.isSeller()){
+    public Integer consumeProduct(String sellerId, Integer productId, Integer number) {
+        if(role.isNotARaftMember()){
             return -1;
         }
-        return role.consumeStockByProductId(productId, number);
+        return role.consumeStockByProductId(sellerId, productId, number);
     }
 }

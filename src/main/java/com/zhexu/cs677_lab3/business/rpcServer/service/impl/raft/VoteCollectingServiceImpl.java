@@ -1,9 +1,9 @@
 package com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft;
 
 import com.zhexu.cs677_lab3.api.bean.RaftEvents.election.RaftVoterResp;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
-import com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft.basic.BasicImpl;
+import com.zhexu.cs677_lab3.business.rpcServer.service.impl.basic.BasicImpl;
 import com.zhexu.cs677_lab3.business.rpcServer.service.raft.VoteCollectingService;
 import com.zhexu.cs677_lab3.constants.ResponseCode;
 import com.zhexu.cs677_lab3.utils.SpringContextUtils;

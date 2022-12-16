@@ -1,5 +1,5 @@
 # configs of the market
-peerNumber: 3
+traderNumber: 3
 sellerNumber: 3
 buyerNumber: 2
 port: 2121
@@ -20,3 +20,4 @@ productNameList:
 
 # config of runner
 rpcBuffSize: 10240
+runMode: 0

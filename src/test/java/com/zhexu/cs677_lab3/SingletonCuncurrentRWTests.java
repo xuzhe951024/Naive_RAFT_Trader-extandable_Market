@@ -3,6 +3,7 @@ package com.zhexu.cs677_lab3;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.api.bean.basic.PeerBase;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.Stock;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.api.bean.config.InitConfigForRole;
 import lombok.extern.log4j.Log4j2;
@@ -32,7 +33,7 @@ public class SingletonCuncurrentRWTests {
             put(0, new Product());
         }});
         config.setStock(new HashMap<>() {{
-            put(new Product(), 1);
+            put(UUID.randomUUID().toString(), new Stock());
         }});
 
         SingletonFactory.setInitConfigForRole(config);

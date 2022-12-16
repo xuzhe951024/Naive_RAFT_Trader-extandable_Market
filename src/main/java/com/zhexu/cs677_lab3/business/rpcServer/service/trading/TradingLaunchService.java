@@ -1,7 +1,7 @@
 package com.zhexu.cs677_lab3.business.rpcServer.service.trading;
 
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 
 /**
  * @project: CS677_LAB3

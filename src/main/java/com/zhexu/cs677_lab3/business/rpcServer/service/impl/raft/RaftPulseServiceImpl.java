@@ -2,13 +2,13 @@ package com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftPulse;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.RaftTransBase;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.business.raft.ElectionInitialzeService;
 import com.zhexu.cs677_lab3.business.raft.Impl.SyncLogInitiateServiceImpl;
 import com.zhexu.cs677_lab3.business.raft.SyncLogInitiateService;
-import com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft.basic.BasicImpl;
+import com.zhexu.cs677_lab3.business.rpcServer.service.impl.basic.BasicImpl;
 import com.zhexu.cs677_lab3.business.rpcServer.service.raft.RaftPulseService;
 import com.zhexu.cs677_lab3.utils.SpringContextUtils;
 import lombok.extern.log4j.Log4j2;
@@ -44,7 +44,7 @@ public class RaftPulseServiceImpl extends BasicImpl implements RaftPulseService 
         if (pulse.isTermOrIndexLarger(peer.getRaftBase())) {
             if (!peer.isFollower()) {
                 log.debug("Expired " +
-                        peer.getRaftRole() +
+                        peer.getPositionName() +
                         " becasuse of receiving of larger term or index of:" +
                         ENTER +
                         (RaftTransBase) pulse +
@@ -62,7 +62,7 @@ public class RaftPulseServiceImpl extends BasicImpl implements RaftPulseService 
             response.setStatus(STATUS_FORBIDDEN);
             response.setDiscription(DESCRIPTION_FORBIDDEN);
             response.setMessage("sending pluse to an unexpired " +
-                    peer.getRaftRole()+
+                    peer.getPositionName()+
                     " (" +
                     peer.getSelfAddress().getDomain() +
                     ")!");

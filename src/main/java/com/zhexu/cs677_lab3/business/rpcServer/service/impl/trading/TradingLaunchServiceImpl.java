@@ -1,10 +1,12 @@
 package com.zhexu.cs677_lab3.business.rpcServer.service.impl.trading;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
 import com.zhexu.cs677_lab3.api.bean.Role;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.MarketTransactionResultResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLogItem;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.api.bean.config.TimerConfig;
@@ -12,6 +14,8 @@ import com.zhexu.cs677_lab3.business.raft.EventApplyInitiateService;
 import com.zhexu.cs677_lab3.business.raft.Impl.EventApplyInitiateServiceImpl;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.ProxyFactory;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.RPCInvocationHandler;
+import com.zhexu.cs677_lab3.business.rpcServer.service.trading.PrintTradingResultService;
+import com.zhexu.cs677_lab3.business.rpcServer.service.trading.TradingDbService;
 import com.zhexu.cs677_lab3.business.rpcServer.service.trading.TradingLaunchService;
 import com.zhexu.cs677_lab3.business.rpcServer.service.trading.TradingRespService;
 import com.zhexu.cs677_lab3.constants.ResponseCode;
@@ -21,7 +25,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.*;
 
-import static com.zhexu.cs677_lab3.constants.Consts.MARKET_LOG_PREFIX;
+import static com.zhexu.cs677_lab3.constants.Consts.*;
 
 /**
  * @project: CS677_LAB3
@@ -64,19 +68,48 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
     }
 
     private void startTrading(MarketTransaction transaction) throws Exception {
+        MarketTransactionResultResponse resultResponse = new MarketTransactionResultResponse();
 
         log.info(MARKET_LOG_PREFIX + "Starting find seller");
 
-        List<Address> stockAvailableList = new LinkedList<>(){{
-            role.getNeighbourPeerMap().forEach((k, v) -> {
-                RPCInvocationHandler handler = new RPCInvocationHandler(v);
-                TradingRespService tradingRespService = ProxyFactory.getInstance(TradingRespService.class, handler);
-                if (tradingRespService.checkIfProductAvailable(transaction.getProduct().getProductId(),
-                        transaction.getNumber())){
-                    add(v);
-                }
-            });
+        /*
+         *
+         *    1. Cache with strict consistency
+         *      a. find seller in cache
+         *      b. consensus
+         *      c. update cache
+         *          c1. response purchas result to buyer
+         *      d. write to db
+         *          d1. response shipment to buyer
+         *    2. no cache
+         *       a. use db service, and response to buyer
+         *
+         */
+
+        if (role.isNotARaftMember()){
+            log.error(role.getSelfAddress().getDomain() + " is not a trader!");
+            return;
+        }
+
+        if (SingletonFactory.runWithoutCache()){
+            tradeToDb(transaction);
+        }
+
+        List<Address> stockAvailableList = new LinkedList<>() {{
+            if (null != transaction.getSeller()) {
+                add(role.getNeighbourAdd(transaction.getSeller()));
+            } else {
+                role.getStockMap().forEach((k, v) -> {
+                    TradingRespService tradingRespService = new TradingRespServiceImpl();
+                    if (tradingRespService.checkIfProductAvailable(k,
+                            transaction.getProduct().getProductId(),
+                            transaction.getNumber())) {
+                        add(role.getNeighbourAdd(UUID.fromString(k)));
+                    }
+                });
+            }
         }};
+
 
         if (stockAvailableList.isEmpty()) {
             log.info(MARKET_LOG_PREFIX +
@@ -87,6 +120,9 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
                     "available!");
             transaction.setSuccessful(Boolean.FALSE);
             transaction.setRemark("Stock insufficient!");
+            resultResponse.setMessage(TRADER_FAIL_MESSAGE);
+            resultResponse.setTransaction(transaction);
+            resultResponse.setStatus(ResponseCode.STATUS_FORBIDDEN);
         }
 
         log.info(MARKET_LOG_PREFIX + "Seller List: " + stockAvailableList.toString());
@@ -96,7 +132,10 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
         for (Address sellerAdd : stockAvailableList) {
             RPCInvocationHandler handler = new RPCInvocationHandler(sellerAdd);
             TradingRespService tradingRespService = ProxyFactory.getInstance(TradingRespService.class, handler);
-            Integer stock = tradingRespService.consumeProduct(transaction.getProduct().getProductId(), transaction.getNumber());
+            Integer stock = tradingRespService.consumeProduct(
+                    transaction.getSeller().toString(),
+                    transaction.getProduct().getProductId(),
+                    transaction.getNumber());
             if (stock.intValue() < 0) {
                 continue;
             }
@@ -120,39 +159,38 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
             Thread.sleep(TimerConfig.getLogBroadCastApplyWaitTime());
 
             if (!eventApplyInitiateService.collectedEnougthResponse()) {
-                log.info(MARKET_LOG_PREFIX +
-                        "Did not collect enough broadcast responses for transaction:" +
-                        transaction.getTransactionId() +
-                        "rolling back now.");
-
-                MarketTransaction rollbackTransaction = new MarketTransaction();
-
-                role.getRaftBase().increaseIndex();
-
-                rollbackTransaction.setRollBackTransaction(transaction);
-                rollbackTransaction.setTermAndIndex(role.getRaftBase());
-
-                Integer rollBackStock = tradingRespService.consumeProduct(transaction.getProduct().getProductId(),
-                        -transaction.getNumber());
-                rollbackTransaction.setStock(rollBackStock);
-
-                eventApplyInitiateService.rollback(() -> {
-                    EventApplyInitiateService rollBackApply = new EventApplyInitiateServiceImpl();
-
-                    RaftLogItem rollBackLogItem = new RaftLogItem();
-
-                    rollBackLogItem.setEventClassName(rollbackTransaction.getClass().getName());
-                    rollBackLogItem.setEventJSONString(objectMapper.writeValueAsString(rollbackTransaction));
-                    rollBackLogItem.setTermAndIndex(rollbackTransaction);
-                    rollBackLogItem.setEventId(transaction.getEventId());
-
-                    rollBackApply.setLogItem(rollBackLogItem);
-                    rollBackApply.broardCast();
-                    rollBackApply.cleanMessageBroadCastMap();
-                });
+//                log.info(MARKET_LOG_PREFIX +
+//                        "Did not collect enough broadcast responses for transaction:" +
+//                        transaction.getTransactionId() +
+//                        "rolling back now.");
+//
+//                MarketTransaction rollbackTransaction = new MarketTransaction();
+//
+//                role.getRaftBase().increaseIndex();
+//
+//                rollbackTransaction.setRollBackTransaction(transaction);
+//                rollbackTransaction.setTermAndIndex(role.getRaftBase());
+//
+//                Integer rollBackStock = tradingRespService.consumeProduct(
+//                        transaction.getSeller().toString(),
+//                        transaction.getProduct().getProductId(),
+//                        -transaction.getNumber());
+//                rollbackTransaction.setStock(rollBackStock);
+//                RaftLogItem rollBackLogItem = new RaftLogItem();
+//
+//                rollBackLogItem.setEventClassName(rollbackTransaction.getClass().getName());
+//                rollBackLogItem.setEventJSONString(objectMapper.writeValueAsString(rollbackTransaction));
+//                rollBackLogItem.setTermAndIndex(rollbackTransaction);
+//                rollBackLogItem.setEventId(transaction.getEventId());
+//
+//                eventApplyInitiateService.rollback(() -> rollbackeMarketTransaction(rollBackLogItem));
             }
 
             eventApplyInitiateService.commit();
+            resultResponse.setMessage(TRADER_SUCCESS_MESSAGE);
+            resultResponse.setTransaction(transaction);
+
+            tradeToDb(transaction);
             log.info(MARKET_LOG_PREFIX +
                     "Transaction: " +
                     transaction.toString() +
@@ -162,5 +200,28 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
 
         }
 
+        RPCInvocationHandler printResultHandler = new RPCInvocationHandler(transaction.getBuyerAdd());
+        PrintTradingResultService printTradingResultService = ProxyFactory.getInstance(PrintTradingResultService.class, printResultHandler);
+        printTradingResultService.print(resultResponse);
+
     }
+
+    private void tradeToDb(MarketTransaction transaction) {
+        TradingDbService tradingDbService = new TradingDbServiceImpl();
+        MarketTransactionResultResponse resultResponse = tradingDbService.tradDb(transaction);
+
+        RPCInvocationHandler handler = new RPCInvocationHandler(transaction.getBuyerAdd());
+        PrintTradingResultService printTradingResultService = ProxyFactory.getInstance(PrintTradingResultService.class, handler);
+        printTradingResultService.print(resultResponse);
+    }
+
+    private void rollbackeMarketTransaction(RaftLogItem rollBackLogItem) throws JsonProcessingException {
+        EventApplyInitiateService rollBackApply = new EventApplyInitiateServiceImpl();
+
+        rollBackApply.setLogItem(rollBackLogItem);
+        rollBackApply.broardCast();
+        rollBackApply.cleanMessageBroadCastMap();
+    }
+
+
 }

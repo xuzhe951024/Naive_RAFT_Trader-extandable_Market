@@ -3,7 +3,7 @@ package com.zhexu.cs677_lab3.api.restful.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhexu.cs677_lab3.api.bean.RaftEvents.election.RaftElection;
 import com.zhexu.cs677_lab3.api.bean.Role;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLogItem;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.api.repository.CouchDBCURDForRaftEvents;

@@ -51,7 +51,7 @@ public class Cs677Lab2Application {
                 "\nelection timeout interval: " + TimerConfig.getElectionWaitTime() +
                 "\nlog broadcast apply timeout interval" + TimerConfig.getLogBroadCastApplyWaitTime());
 
-        log.debug("Stock info: " + SingletonFactory.getRole().getStock().toString());
+        log.debug("Stock info: " + SingletonFactory.getRole().getStockMap().toString());
         log.debug("Product list info: " + SingletonFactory.getRole().getProductMap().toString());
         log.info(IMPORTANT_LOG_WRAPPER);
     }

@@ -13,15 +13,24 @@ public class Consts {
     public static final Integer ZERO = 0;
     public static final Integer TWO  = 2;
     public static final Integer THREE = 3;
+    public static final Integer FOUR = 4;
     public static final Integer THIRTY = 30;
     public static final Integer SIXTY = 60;
-    public static final Integer LATENCY_TEST_TIME = 5;
+    public static final Integer LATENCY_TEST_TIME = 2;
     public static final Integer ONE_MILLION = 1000000;
     public static final Integer TEN_THOUSAND = 10000;
     public static final Integer ONE_THOUSAND = 1000;
     public static final Integer ONE_HUNDRED = 100;
     public static final Integer HEART_PULSE_INTERVAL = 100;
     public static final Integer SERIALIZATION_BUF_SIZE = 10240;
+    public static final Integer RUN_WITH_CACHE = 0;
+    public static final Integer RUN_WITHOUT_CACHE = 1;
+
+    public static final String TRADER_SUCCESS_MESSAGE = "Trader message: purchase successful!";
+    public static final String STORE_SUCCESS_MESSAGE = "Store message: product shipped!";
+
+    public static final String TRADER_FAIL_MESSAGE = "Trader message: purchase failed!";
+    public static final String STORE_FAIL_MESSAGE = "Store message: product shipping failed!";
     public static final String TRANSACTION_ROLLING_BACK_PREFIX = "Rolling back of transaction";
     public static final String MARKET_LOG_PREFIX = "[MARKET]:";
     public static final String RAFT_LOG_ID_SEPRATOR = "_";

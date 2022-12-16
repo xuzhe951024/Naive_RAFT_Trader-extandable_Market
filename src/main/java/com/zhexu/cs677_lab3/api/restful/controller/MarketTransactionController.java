@@ -2,7 +2,7 @@ package com.zhexu.cs677_lab3.api.restful.controller;
 
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.MarketTransaction;
 import com.zhexu.cs677_lab3.api.bean.Role;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.ProxyFactory;
 import com.zhexu.cs677_lab3.business.rpcClient.proxy.RPCInvocationHandler;

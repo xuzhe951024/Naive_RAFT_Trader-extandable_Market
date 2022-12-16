@@ -3,7 +3,7 @@ package com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.SerializableRaftLogListWrapper;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLogItem;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLogStateCapture;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 import com.zhexu.cs677_lab3.api.bean.basic.PeerBase;
 import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
 import com.zhexu.cs677_lab3.api.repository.CouchDBCURDForRaftEvents;

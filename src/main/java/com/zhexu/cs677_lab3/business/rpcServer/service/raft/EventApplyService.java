@@ -2,7 +2,7 @@ package com.zhexu.cs677_lab3.business.rpcServer.service.raft;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLogItem;
-import com.zhexu.cs677_lab3.api.bean.basic.BasicResponse;
+import com.zhexu.cs677_lab3.api.bean.response.basic.BasicResponse;
 
 import java.util.UUID;
 

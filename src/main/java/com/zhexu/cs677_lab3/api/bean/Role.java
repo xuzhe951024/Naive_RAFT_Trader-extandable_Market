@@ -4,14 +4,14 @@ package com.zhexu.cs677_lab3.api.bean;
 import com.zhexu.cs677_lab3.api.bean.basic.Address;
 import com.zhexu.cs677_lab3.api.bean.basic.PeerBase;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
-import com.zhexu.cs677_lab3.api.bean.basic.factories.SingletonFactory;
+import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.Stock;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.logging.Logger;
 
 import static com.zhexu.cs677_lab3.constants.Consts.*;
+import static com.zhexu.cs677_lab3.constants.RoleConsts.*;
 
 
 /**
@@ -22,124 +22,91 @@ import static com.zhexu.cs677_lab3.constants.Consts.*;
  **/
 @Log4j2
 public class Role extends PeerBase implements Serializable {
-    private Boolean isBuyer = Boolean.FALSE;
-    private Boolean isSeller = Boolean.FALSE;
     private Map<Integer, Product> productMap;
 
-    private Map<Product, Integer> stock;
+    private Map<String, Stock> stockMap;
 
-    public Role(UUID id, Map<UUID, Address> neighbourPeerList, Address address, Map<Integer, Product> productMap, Map<Product, Integer> stock) {
+    public Role(UUID id, Map<UUID, Address> neighbourPeerList, Address address, Map<Integer, Product> productMap, Map<String, Stock> stockMap) {
         super(id, neighbourPeerList, address);
         this.productMap = productMap;
-        this.stock = stock;
+        this.stockMap = stockMap;
     }
 
-
-    public Map<Product, Integer> getStock() {
-        return stock;
+    public Map<String, Stock> getStockMap() {
+        return stockMap;
     }
 
-    public Integer getProductMapSize(){
+    public Integer getProductMapSize() {
         return this.productMap.size();
     }
 
-    public Integer getStockByProductId(Integer id) {
-        Product targetProduct = this.productMap.get(id);
+    public Boolean isStockAvaliable(String sellerId, Integer productId){
+        Product targetProduct = this.productMap.get(productId);
+        return null != this.stockMap
+                && null != this.stockMap.get(sellerId)
+                && null != this.stockMap.get(sellerId).getStock()
+                && null != this.stockMap.get(sellerId).getStock().get(targetProduct);
+    }
 
-        if (this.stock.isEmpty() || null == this.stock.get(targetProduct)){
-            return ZERO;
+    public Integer getStockByProductId(String sellerId, Integer productId) {
+        Product targetProduct = this.productMap.get(productId);
+
+        if (!isStockAvaliable(sellerId, productId)) {
+            return -ONE;
         }
 
-        if (this.stock.get(targetProduct) < SingletonFactory.getMaxStock()){
-            Random random = new Random();
-            Integer reStockNumber = random.nextInt(SingletonFactory.getMaxStock());
-            this.stock.put(targetProduct, this.stock.get(targetProduct) + reStockNumber);
-            log.info("Restock: " + targetProduct.getProductName() + "with number of: " + reStockNumber);
+        return this.stockMap.get(sellerId).getStock().get(targetProduct);
+    }
+
+    public Integer consumeStockByProductId(String sellerId, Integer productId, Integer number) {
+        Product targetProduct = this.productMap.get(productId);
+        if (!isStockAvaliable(sellerId, productId)) {
+            return -ONE;
         }
 
-        return this.stock.get(targetProduct);
-    }
+        Integer result = this.stockMap.get(sellerId).getStock().get(targetProduct) - number;
 
-    public Integer consumeStockByProductId(Integer id, Integer number){
-        Product targetProduct = this.productMap.get(id);
-        if (!this.stock.isEmpty()
-                && null != this.stock.get(targetProduct)
-                && this.stock.get(targetProduct) - number >= 0){
-            this.stock.put(
-                    targetProduct, this.stock.get(targetProduct) - number
-            );
-            return this.stock.get(targetProduct);
+        if (result >= 0){
+            this.stockMap.get(sellerId).getStock().put(targetProduct, result);
         }
-        return -1;
+
+        return result;
     }
 
-    public void reImportWhenSold() {
-        Random ra = new Random();
-        List<Product> productList = SingletonFactory.getProductList();
-        Integer maxStock = SingletonFactory.getMaxStock();
-        Map<Product, Integer> newStock = new HashMap<>();
-        newStock.put(
-                productList.get(ra.nextInt(productList.size())), ra.nextInt(maxStock)
-        );
-        Logger logger = Logger.getLogger(LOGGER_TRADE);
-        logger.info("Stock updated:" + ENTER +
-                this.getStock() + ENTER);
-    }
-
-    public void setStock(Map<Product, Integer> stock) {
-        this.stock = stock;
-    }
-
-    public Integer quaryStock(Product product) {
-        return this.stock.get(product);
-    }
-
-    public Integer addStock(Product product, Integer number) {
-        this.stock.put(product, this.stock.get(product) + number);
-        return this.stock.get(product);
-    }
-
-    public Integer cosumeStock(Product product, Integer number) {
-        if (!this.stock.containsKey(product)) {
-            return -1;
-        }
-        if (this.stock.get(product) >= number) {
-            this.stock.put(product, this.stock.get(product) - number);
-            if (0 >= this.stock.get(product)) {
-                reImportWhenSold();
-                return 0;
-            }
-            return this.stock.get(product);
-        }
-        return -2;
-    }
-
-    public Boolean ifProductInStore(Product product) {
-        return this.stock.containsKey(product);
+    public void setStockMap(Map<String, Stock> stockMap) {
+        this.stockMap = stockMap;
     }
 
     public Boolean isBuyer() {
-        return this.isBuyer;
+        return MARKET_BUYER.equals(getPositionName());
     }
 
     public Boolean isSeller() {
-        return this.isSeller;
+        return MARKET_SELLER.equals(getPositionName()) ;
     }
 
     public void becomeBuyer() {
-        this.isBuyer = Boolean.TRUE;
+         setPositionName(MARKET_BUYER);
     }
 
     public void becomeSeller() {
-        this.isSeller = Boolean.TRUE;
+        setPositionName(MARKET_SELLER);
     }
 
-    public void stopBuying() {
-        this.isBuyer = Boolean.FALSE;
+    public Boolean isStore() {
+        return MARKET_STORE.equals(getPositionName());
     }
 
-    public void stopSelling() {
-        this.isSeller = Boolean.FALSE;
+    public void becomeStore() {
+        setPositionName(MARKET_STORE);
+    }
+
+    public Boolean isProxy() {
+        return MARKET_PROXY.equals(getPositionName());
+    }
+
+    public void becomeProxy() {
+        setPositionName(MARKET_PROXY);
     }
 
     public Map<Integer, Product> getProductMap() {
@@ -154,7 +121,7 @@ public class Role extends PeerBase implements Serializable {
     public String toString() {
         return "Role{" +
                 "shopList=" + productMap +
-                ", stock=" + stock +
+                ", stock=" + stockMap +
                 '}';
     }
 }

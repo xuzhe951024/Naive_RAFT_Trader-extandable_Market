@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.zhexu.cs677_lab3.constants.Consts.ONE;
-import static com.zhexu.cs677_lab3.constants.RaftConsts.*;
+import static com.zhexu.cs677_lab3.constants.RoleConsts.*;
 
 
 /**
@@ -32,11 +32,9 @@ public class PeerBase implements Serializable {
     private Map<Long, Long> electedMap;
     private Boolean isPulseTimeout = Boolean.FALSE;
     private Map<UUID, Boolean> voteCollector;
-    private String raftRole;
+    private String positionName;
     private Map<UUID, Integer> messageBroadCastMap;
     private Boolean syncLogInProgress = Boolean.FALSE;
-
-
 
     public void updateMeanTime(Long responseTime) {
         this.averageResponseTime = (this.averageResponseTime * this.measureTimes + responseTime) / (this.measureTimes + ONE);
@@ -114,28 +112,28 @@ public class PeerBase implements Serializable {
     }
 
     public Boolean isLeader() {
-        return this.Id.equals(this.leaderID) && this.raftRole.equals(RAFT_ROLE_LEADER);
+        return this.Id.equals(this.leaderID) && this.positionName.equals(RAFT_ROLE_LEADER);
     }
 
     public Boolean isFollower() {
-        return this.raftRole.equals(RAFT_ROLE_FOLLOWER);
+        return this.positionName.equals(RAFT_ROLE_FOLLOWER);
     }
 
     public Boolean isCandidate() {
-        return this.raftRole.equals(RAFT_ROLE_CANDIDATE);
+        return this.positionName.equals(RAFT_ROLE_CANDIDATE);
     }
 
     public void becomeLeader() {
-        this.raftRole = RAFT_ROLE_LEADER;
+        this.positionName = RAFT_ROLE_LEADER;
         this.leaderID = this.Id;
     }
 
     public void becomeCandidate() {
-        this.raftRole = RAFT_ROLE_CANDIDATE;
+        this.positionName = RAFT_ROLE_CANDIDATE;
     }
 
     public void becomeFollwer() {
-        this.raftRole = RAFT_ROLE_FOLLOWER;
+        this.positionName = RAFT_ROLE_FOLLOWER;
         SingletonFactory.setCurrentTime();
     }
 
@@ -235,13 +233,21 @@ public class PeerBase implements Serializable {
         return this.messageBroadCastMap.containsKey(id);
     }
 
-    public String getRaftRole() {
-        return raftRole;
+    public String getPositionName() {
+        return positionName;
     }
 
     public Boolean isSyncLogInProgress() {
         return syncLogInProgress;
     }
+
+    public Boolean isNotARaftMember(){
+        return !isFollower() && !isCandidate() && !isLeader();
+    }
+    public Boolean isARaftMember(){
+        return isFollower() || isCandidate() || isLeader();
+    }
+
 
     public void startSyncLog() {
         this.syncLogInProgress = Boolean.TRUE;
@@ -249,6 +255,10 @@ public class PeerBase implements Serializable {
 
     public void finishedSyncLog(){
         this.syncLogInProgress = Boolean.FALSE;
+    }
+
+    public void setPositionName(String positionName){
+        this.positionName = positionName;
     }
 
     @Override
@@ -264,7 +274,7 @@ public class PeerBase implements Serializable {
                 ", electedMap=" + electedMap +
                 ", isPulseTimeout=" + isPulseTimeout +
                 ", voteCollector=" + voteCollector +
-                ", raftRole='" + raftRole + '\'' +
+                ", raftRole='" + positionName + '\'' +
                 ", messageBroadCastMap=" + messageBroadCastMap +
                 '}';
     }
