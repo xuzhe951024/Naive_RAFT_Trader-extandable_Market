@@ -14,6 +14,6 @@ import java.util.UUID;
  **/
 public interface EventApplyService {
 //    BasicResponse
-    public BasicResponse response(UUID logId);
-    public BasicResponse applyNewMassage(RaftLogItem logItem) throws ClassNotFoundException, JsonProcessingException;
+BasicResponse response(UUID logId);
+    BasicResponse applyNewMassage(RaftLogItem logItem) throws ClassNotFoundException, JsonProcessingException;
 }

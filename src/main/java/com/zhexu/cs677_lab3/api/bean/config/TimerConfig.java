@@ -16,7 +16,7 @@ import static com.zhexu.cs677_lab3.constants.Consts.*;
  * @create: 11/28/22
  **/
 public class TimerConfig {
-    private static Properties properties = readProperties(TIME_CONFIG_FILE);
+    private static final Properties properties = readProperties(TIME_CONFIG_FILE);
 
     private volatile static Long pulseTimeOut;
     private volatile static Long sendPulseTime;

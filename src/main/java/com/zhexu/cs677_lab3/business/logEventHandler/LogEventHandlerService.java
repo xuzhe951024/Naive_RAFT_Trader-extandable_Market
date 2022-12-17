@@ -11,5 +11,5 @@ import java.util.List;
  * @create: 12/9/22
  **/
 public interface LogEventHandlerService {
-    public Boolean extractHandlerAndRun(List<RaftLogItem> raftLogItemList);
+    Boolean extractHandlerAndRun(List<RaftLogItem> raftLogItemList);
 }

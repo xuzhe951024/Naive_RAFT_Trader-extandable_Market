@@ -1,8 +1,8 @@
-127.0.0.1 cs677.lab2.peer2.example.com
 127.0.0.1 cs677.lab2.peer1.example.com
 127.0.0.1 cs677.lab2.peer0.example.com
-127.0.0.1 cs677.lab2.peer5.example.com
-127.0.0.1 cs677.lab2.peer6.example.com
-127.0.0.1 cs677.lab2.peer3.example.com
-127.0.0.1 cs677.lab2.peer7.example.com
+127.0.0.1 cs677.lab2.peer2.example.com
 127.0.0.1 cs677.lab2.peer4.example.com
+127.0.0.1 cs677.lab2.peer3.example.com
+127.0.0.1 cs677.lab2.peer6.example.com
+127.0.0.1 cs677.lab2.peer5.example.com
+127.0.0.1 cs677.lab2.peer7.example.com

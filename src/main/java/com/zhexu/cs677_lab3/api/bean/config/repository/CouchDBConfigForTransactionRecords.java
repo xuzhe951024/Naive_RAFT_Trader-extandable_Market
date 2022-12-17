@@ -41,9 +41,7 @@ public class CouchDBConfigForTransactionRecords {
         builder.password(couchDBInfoForTransactionRecords.getPassword());
         HttpClient httpClient = builder.build();
         CouchDbInstance couchDbInstance = new StdCouchDbInstance(httpClient);
-        CouchDbConnector couchDbConnector = new StdCouchDbConnector(couchDBInfoForTransactionRecords.getDatabase() +
-                "_" +
-                SingletonFactory.getRole().getSelfAddress().getDomain().replace(".", "_"),
+        CouchDbConnector couchDbConnector = new StdCouchDbConnector(couchDBInfoForTransactionRecords.getDatabase(),
                 couchDbInstance);
         couchDbConnector.createDatabaseIfNotExists();
 

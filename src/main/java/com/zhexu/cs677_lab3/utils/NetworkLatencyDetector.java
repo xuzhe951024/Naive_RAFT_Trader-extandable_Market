@@ -16,7 +16,7 @@ import static com.zhexu.cs677_lab3.constants.Consts.*;
  **/
 @Log4j2
 public class NetworkLatencyDetector {
-    private Long averageLatency = 0l;
+    private Long averageLatency = 0L;
 
     public Long getAverageLatency() {
         return averageLatency;

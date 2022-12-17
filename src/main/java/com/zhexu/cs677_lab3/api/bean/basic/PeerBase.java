@@ -33,7 +33,7 @@ public class PeerBase implements Serializable {
     private Boolean isPulseTimeout = Boolean.FALSE;
     private Map<UUID, Boolean> voteCollector;
     private String positionName;
-    private Map<UUID, Integer> messageBroadCastMap;
+    private final Map<UUID, Integer> messageBroadCastMap;
     private Boolean syncLogInProgress = Boolean.FALSE;
 
     public void updateMeanTime(Long responseTime) {
@@ -142,11 +142,8 @@ public class PeerBase implements Serializable {
     }
 
     public Boolean checkTermIfElectingAvailable(Long term, Long index) {
-        if (!this.electedMap.containsKey(term) ||
-                this.electedMap.get(term) < index) {
-            return true;
-        }
-        return false;
+        return !this.electedMap.containsKey(term) ||
+                this.electedMap.get(term) < index;
     }
 
     public void setElectedMap(Map<Long, Long> electedMap) {
@@ -220,9 +217,7 @@ public class PeerBase implements Serializable {
     }
 
     public void removeMessageBroadCast(UUID id){
-        if(this.messageBroadCastMap.containsKey(id)){
-            this.messageBroadCastMap.remove(id);
-        }
+        this.messageBroadCastMap.remove(id);
     }
 
     public Integer getMessageBroadCast(UUID id){

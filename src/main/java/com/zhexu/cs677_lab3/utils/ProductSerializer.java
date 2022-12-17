@@ -17,10 +17,10 @@ import java.io.StringWriter;
  **/
 public class ProductSerializer extends JsonSerializer<Product> {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public void serialize(Product product, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+    public void serialize(Product product, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         StringWriter writer = new StringWriter();
         mapper.writeValue(writer, product);
         jsonGenerator.writeFieldName(writer.toString());

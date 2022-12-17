@@ -27,7 +27,7 @@ public class EventApplyInitiateServiceImpl implements EventApplyInitiateService 
 
     private RaftLogItem logItem = new RaftLogItem();
 
-    private PeerBase peer = SingletonFactory.getRole();
+    private final PeerBase peer = SingletonFactory.getRole();
 
 
     /**
@@ -43,11 +43,11 @@ public class EventApplyInitiateServiceImpl implements EventApplyInitiateService 
      */
     @Override
     public void broardCast() throws JsonProcessingException {
-        if (!peer.isLeader()) {
+        if (peer.isNotARaftMember()) {
             log.error("Broadcast ERR: Peer: " + ENTER +
                     peer.getSelfAddress().getDomain() + ENTER +
                     "is a " + peer.getPositionName() +
-                    "instead of a leader!");
+                    "instead of a trader!");
             return;
         }
         if (null == this.logItem) {
@@ -77,10 +77,10 @@ public class EventApplyInitiateServiceImpl implements EventApplyInitiateService 
      */
     @Override
     public Boolean collectedEnougthResponse() {
-        if (!peer.isLeader()) {
+        if (peer.isNotARaftMember()) {
             log.info("Broadcast ERR: Peer: " +
                     peer.getSelfAddress().getDomain() +
-                    " is not a leader!");
+                    " is not a trader!");
             return Boolean.FALSE;
         }
 
@@ -101,10 +101,10 @@ public class EventApplyInitiateServiceImpl implements EventApplyInitiateService 
      */
     @Override
     public void commit() throws Exception {
-        if (!peer.isLeader()) {
+        if (peer.isNotARaftMember()) {
             log.info("Broadcast ERR: Peer: " +
                     peer.getSelfAddress().getDomain() +
-                    "is not a leader!");
+                    "is not a trader!");
             return;
         }
 

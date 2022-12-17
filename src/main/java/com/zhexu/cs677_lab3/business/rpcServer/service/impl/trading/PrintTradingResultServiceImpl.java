@@ -37,7 +37,7 @@ public class PrintTradingResultServiceImpl implements PrintTradingResultService 
                "\nAvarage transaction time: " +
                SingletonFactory.getTransactionTime() / SingletonFactory.getTransactionNum() +
                " ms\nTransaction details:" +
-               transactionBean.toString());
+               transactionBean);
        log.info(IMPORTANT_LOG_WRAPPER + ENTER);
     }
 }

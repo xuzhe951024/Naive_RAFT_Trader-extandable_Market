@@ -47,7 +47,7 @@ public class RaftPulseServiceImpl extends BasicImpl implements RaftPulseService 
                         peer.getPositionName() +
                         " becasuse of receiving of larger term or index of:" +
                         ENTER +
-                        (RaftTransBase) pulse +
+                        pulse +
                         ENTER +
                         "self term and index:" +
                         ENTER +
@@ -86,7 +86,7 @@ public class RaftPulseServiceImpl extends BasicImpl implements RaftPulseService 
             log.info("Unupdated clock:\n" +
                     peer.getRaftBase().toString() +
                     "\nfound in pulse service of:\n" +
-                    pulse.toString() +
+                    pulse +
                     "\n, starting sync log from leader:" +
                     peer.getNeighbourAdd(peer.getLeaderID()).getDomain());
 
@@ -102,7 +102,7 @@ public class RaftPulseServiceImpl extends BasicImpl implements RaftPulseService 
             }
 
             log.info("Leader expired with a smaller term/index of" + ENTER +
-                    (RaftTransBase)pulse + ENTER +
+                    pulse + ENTER +
                     "self term/index: " + ENTER +
                     peer.getRaftBase() +
                     ", \nstarting election:");

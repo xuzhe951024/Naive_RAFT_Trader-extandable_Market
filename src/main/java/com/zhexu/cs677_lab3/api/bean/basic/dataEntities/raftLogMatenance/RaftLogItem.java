@@ -29,7 +29,7 @@ public class RaftLogItem extends RaftTransBase implements Serializable, Comparat
     private String JsonStringHashCode;
 
     private UUID eventId = UUID.randomUUID();
-    private String localTimeStamp = String.valueOf(System.currentTimeMillis());
+    private final String localTimeStamp = String.valueOf(System.currentTimeMillis());
 
     public UUID getLogId() {
         return logId;

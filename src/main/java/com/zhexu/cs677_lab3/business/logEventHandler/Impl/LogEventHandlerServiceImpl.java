@@ -24,9 +24,9 @@ import static com.zhexu.cs677_lab3.constants.Consts.*;
  **/
 @Log4j2
 public class LogEventHandlerServiceImpl implements LogEventHandlerService {
-    private PeerBase peer = SingletonFactory.getRole();
+    private final PeerBase peer = SingletonFactory.getRole();
     private List<RaftLogItem> raftLogItemList;
-    private static Properties properties = readProperties(LOG_EVENT_HANDLER_METHODS_MAP_CONFIG);
+    private static final Properties properties = readProperties(LOG_EVENT_HANDLER_METHODS_MAP_CONFIG);
     private static Properties readProperties(String confFile) {
         final Properties properties = new Properties();
         try {
@@ -71,7 +71,7 @@ public class LogEventHandlerServiceImpl implements LogEventHandlerService {
             try {
                 log.debug("logItem: " + e.toString());
                 log.debug("Now extract handler:\n" +
-                        (String) properties.get(e.getEventClassName()) +
+                        properties.get(e.getEventClassName()) +
                         "\nClass:\n" +
                         Class.forName((String) properties.get(e.getEventClassName())).getName());
                 EventHandler handler = (EventHandler) Class.forName((String) properties.get(e.getEventClassName())).newInstance();

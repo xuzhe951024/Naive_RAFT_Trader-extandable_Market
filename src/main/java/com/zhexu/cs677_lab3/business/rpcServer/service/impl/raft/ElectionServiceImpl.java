@@ -66,7 +66,7 @@ public class ElectionServiceImpl extends BasicImpl implements ElectionService {
                     peer.getRaftBase());
             peer.becomeFollwer();
             log.debug("Caused by election req: " +
-                    candidateVoteReq.toString() +
+                    candidateVoteReq +
                     " from: " +
                     candidateVoteReq.getCandidateAddress().getDomain());
             log.debug("Now become follower");
@@ -111,6 +111,10 @@ public class ElectionServiceImpl extends BasicImpl implements ElectionService {
         }
 
         peer.unlockInitElection(candidateVoteReq.getTerm(), candidateVoteReq.getIndex());
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        System.out.println(Class.forName("com.zhexu.cs677_lab3.business.rpcServer.service.impl.raft.ElectionServiceImpl").getName());
     }
 
 

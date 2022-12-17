@@ -6,7 +6,7 @@ port: 2121
 deployOnSingleComputer: true
 neighbourNum: 1
 maxJump: 5
-sleepBeforeStart: 5000
+sleepBeforeStart: 50000
 numberOfTests: 1000
 
 

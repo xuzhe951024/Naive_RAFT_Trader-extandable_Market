@@ -42,7 +42,7 @@ public class RpcServer {
     /**
      * Profiles
      */
-    private static Properties properties;
+    private static final Properties properties;
 
     /**
      * Read configurations

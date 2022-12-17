@@ -19,7 +19,7 @@ public class MarketTransactionHandlerImpl extends EventHandlerBase {
     private MarketTransaction transactionBean;
     private UUID logId;
     private UUID eventId;
-    private Role role = SingletonFactory.getRole();
+    private final Role role = SingletonFactory.getRole();
 
     /**
      * @param eventBean

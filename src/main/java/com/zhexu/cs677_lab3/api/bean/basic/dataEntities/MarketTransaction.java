@@ -29,7 +29,7 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
     private String remark;
     private Integer stock;
     private UUID eventId = UUID.randomUUID();
-    private Long localTimeStamp = System.currentTimeMillis();
+    private final Long localTimeStamp = System.currentTimeMillis();
 
     private Address buyerAdd;
 
@@ -95,7 +95,7 @@ public class MarketTransaction extends RaftTransBase implements Serializable {
 
 
     public Boolean isMainSeller(UUID id){
-        return null != this.seller && null != id && this.seller.equals(id);
+        return null != this.seller && this.seller.equals(id);
     }
 
     public Integer getStock() {

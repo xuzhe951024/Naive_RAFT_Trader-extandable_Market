@@ -40,7 +40,6 @@ public class SingletonFactory {
     private volatile static int runMode;
 
 
-
     public static Long getNetworkLatency() {
         return networkLatency;
     }
@@ -56,25 +55,25 @@ public class SingletonFactory {
         initConfigForRole = config;
     }
 
-    public static void setProductList(List<Product> products){
+    public static void setProductList(List<Product> products) {
         productList = new ArrayList<>(products);
     }
 
-    public static void setMaxStock(Integer number){
+    public static void setMaxStock(Integer number) {
         maxStock = number;
     }
 
 
-    public static Integer getMaxStock(){
+    public static Integer getMaxStock() {
         return maxStock;
     }
 
 
-    public static List<Product> getProductList(){
+    public static List<Product> getProductList() {
         return productList;
     }
 
-    public static String getSelfDomain(){
+    public static String getSelfDomain() {
         return getRole().getSelfAddress().getDomain();
     }
 
@@ -85,7 +84,7 @@ public class SingletonFactory {
                 initConfigForRole.getNeighbours().forEach((k, v) -> {
                     NetworkLatencyDetector networkLatencyDetector = new NetworkLatencyDetector();
                     try {
-                        if (!networkLatencyDetector.isReachable(v)){
+                        if (!networkLatencyDetector.isReachable(v)) {
                             return;
                         }
                         SingletonFactory.networkLatency = networkLatencyDetector.getAverageLatency();
@@ -102,21 +101,17 @@ public class SingletonFactory {
                     Map<String, Stock> stocks = initConfigForRole.getStock();
 
 
-
                     role = new Role(UUID.fromString(initConfigForRole.getId()),
                             neighbouMap,
                             initConfigForRole.getSelfAdd(),
                             products,
                             stocks);
-                    if (initConfigForRole.isBuyer() || initConfigForRole.isSeller()){
-                        role.setPositionName(initConfigForRole.getPositionName());
-                    } else {
-                        RaftTransBase raftTransBase = new RaftTransBase();
-                        raftTransBase.setIndex(0l);
-                        raftTransBase.setTerm(0l);
-                        role.setRaftBase(raftTransBase);
-                        role.becomeFollwer();
-                    }
+
+                    RaftTransBase raftTransBase = new RaftTransBase();
+                    raftTransBase.setIndex(0L);
+                    raftTransBase.setTerm(0L);
+                    role.setRaftBase(raftTransBase);
+                    role.setPositionName(initConfigForRole.getPositionName());
                 }
                 role.setLeaderID(null);
                 TimerConfig.initiateTime(SingletonFactory.networkLatency);
@@ -135,7 +130,7 @@ public class SingletonFactory {
         SingletonFactory.currentTime = System.currentTimeMillis();
     }
 
-    public static Boolean notReady(){
+    public static Boolean notReady() {
         return null == SingletonFactory.initConfigForRole && !TimerConfig.getIsReady();
     }
 
@@ -179,11 +174,11 @@ public class SingletonFactory {
         SingletonFactory.runMode = runMode;
     }
 
-    public static boolean runWithCache(){
+    public static boolean runWithCache() {
         return RUN_WITH_CACHE.intValue() == SingletonFactory.getRunMode();
     }
 
-    public static boolean runWithoutCache(){
+    public static boolean runWithoutCache() {
         return RUN_WITHOUT_CACHE.intValue() == SingletonFactory.getRunMode();
     }
 }

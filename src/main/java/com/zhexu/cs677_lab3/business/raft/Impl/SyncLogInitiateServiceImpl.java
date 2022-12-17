@@ -49,13 +49,13 @@ public class SyncLogInitiateServiceImpl implements SyncLogInitiateService {
         for (int i = 0; i < term; i++) {
             capture.setIndex(peer.getRaftBase().getIndex());
             for (int j = 0; j < index; j++) {
-                log.debug("Trying capture: " + capture.toString());
+                log.debug("Trying capture: " + capture);
 
                 RaftLogItem logItem = couchDbCURDForRaftEvents.querayByTermAndIndex(capture);
 
                 if (null == logItem) {
                     log.debug("capture: " +
-                            capture.toString() +
+                            capture +
                             "not exist in local database!");
                     continue;
                 }
@@ -69,7 +69,7 @@ public class SyncLogInitiateServiceImpl implements SyncLogInitiateService {
                     return;
                 }
                 log.debug("Capture:\n" +
-                        capture.toString() +
+                        capture +
                         "\nnot found!");
                 capture.decreaseIndex();
             }
@@ -78,7 +78,6 @@ public class SyncLogInitiateServiceImpl implements SyncLogInitiateService {
 
         log.info("Fail to sync log!");
         peer.finishedSyncLog();
-        return;
 
     }
 }

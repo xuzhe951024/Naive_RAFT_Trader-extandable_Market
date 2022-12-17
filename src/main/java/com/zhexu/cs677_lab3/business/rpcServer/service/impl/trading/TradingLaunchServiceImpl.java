@@ -44,14 +44,15 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
     @Override
     public BasicResponse launchTradingTransaction(MarketTransaction transaction) {
         BasicResponse response = new BasicResponse();
+
         log.info(MARKET_LOG_PREFIX + "Market transaction request reveived:" + transaction.toString());
 
-        if (!role.isLeader()) {
+        if (role.isNotARaftMember()) {
             response.setStatus(ResponseCode.STATUS_FORBIDDEN);
-            response.setMessage("Transaction could only handle by leader:\npeer:" +
+            response.setMessage("Transaction could only handle by trader:\npeer:" +
                     role.getSelfAddress().getDomain() +
-                    "is not a leader!");
-            log.error(MARKET_LOG_PREFIX + "Self is not a leader, can not handle transaction requests");
+                    "is not a trader!");
+            log.error(MARKET_LOG_PREFIX + "Self is not a trader, can not handle transaction requests");
             return response;
         }
 
@@ -86,25 +87,27 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
          *
          */
 
-        if (role.isNotARaftMember()){
-            log.error(role.getSelfAddress().getDomain() + " is not a trader!");
+        if (role.isNotARaftMember()) {
+            log.error(MARKET_LOG_PREFIX +role.getSelfAddress().getDomain() + " is not a trader!");
             return;
         }
 
-        if (SingletonFactory.runWithoutCache()){
+        if (SingletonFactory.runWithoutCache()) {
             tradeToDb(transaction);
         }
 
-        List<Address> stockAvailableList = new LinkedList<>() {{
+        List<String> stockAvailableList = new LinkedList<>() {{
             if (null != transaction.getSeller()) {
-                add(role.getNeighbourAdd(transaction.getSeller()));
+                log.debug(MARKET_LOG_PREFIX +"Seller " + transaction.getSeller() + " restocking");
+                add(transaction.getSeller().toString());
+
             } else {
                 role.getStockMap().forEach((k, v) -> {
                     TradingRespService tradingRespService = new TradingRespServiceImpl();
                     if (tradingRespService.checkIfProductAvailable(k,
                             transaction.getProduct().getProductId(),
                             transaction.getNumber())) {
-                        add(role.getNeighbourAdd(UUID.fromString(k)));
+                        add(k);
                     }
                 });
             }
@@ -113,11 +116,11 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
 
         if (stockAvailableList.isEmpty()) {
             log.info(MARKET_LOG_PREFIX +
-                    "No product:" +
+                    "No product: " +
                     transaction.getProduct().getProductName() +
-                    "stock: " +
+                    " stock: " +
                     transaction.getStock() +
-                    "available!");
+                    " available!");
             transaction.setSuccessful(Boolean.FALSE);
             transaction.setRemark("Stock insufficient!");
             resultResponse.setMessage(TRADER_FAIL_MESSAGE);
@@ -125,25 +128,28 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
             resultResponse.setStatus(ResponseCode.STATUS_FORBIDDEN);
         }
 
-        log.info(MARKET_LOG_PREFIX + "Seller List: " + stockAvailableList.toString());
+        log.info(MARKET_LOG_PREFIX + "Seller List: " + stockAvailableList);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        for (Address sellerAdd : stockAvailableList) {
-            RPCInvocationHandler handler = new RPCInvocationHandler(sellerAdd);
-            TradingRespService tradingRespService = ProxyFactory.getInstance(TradingRespService.class, handler);
+        for (String sellerId : stockAvailableList) {
+            log.debug(MARKET_LOG_PREFIX +"Start to trading process:");
+            TradingRespService tradingRespService = new TradingRespServiceImpl();
             Integer stock = tradingRespService.consumeProduct(
-                    transaction.getSeller().toString(),
+                    sellerId,
                     transaction.getProduct().getProductId(),
                     transaction.getNumber());
             if (stock.intValue() < 0) {
+                log.debug(MARKET_LOG_PREFIX +"checking before lock stock: insufficient stock!");
                 continue;
             }
 
+            log.debug(MARKET_LOG_PREFIX +"checking before lock stock passed, now assemble transaction bean to launch trading");
             role.getRaftBase().increaseIndex();
             transaction.setTermAndIndex(role.getRaftBase());
-            transaction.setSeller(role.getId());
+            transaction.setSeller(UUID.fromString(sellerId));
             transaction.setStock(stock);
+
             EventApplyInitiateService eventApplyInitiateService = new EventApplyInitiateServiceImpl();
 
             RaftLogItem logItem = new RaftLogItem();
@@ -152,17 +158,25 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
             logItem.setEventJSONString(objectMapper.writeValueAsString(transaction));
             logItem.setTermAndIndex(transaction);
             logItem.setEventId(transaction.getEventId());
+            log.debug(MARKET_LOG_PREFIX +"transaction:\n " +
+                    logItem +
+                    "\nis ready to be apply!");
 
             eventApplyInitiateService.setLogItem(logItem);
             eventApplyInitiateService.broardCast();
 
+            log.info(MARKET_LOG_PREFIX +"Now sleep for " +
+                    TimerConfig.getLogBroadCastApplyWaitTime() +
+                    "ms to wait for responses.");
+
             Thread.sleep(TimerConfig.getLogBroadCastApplyWaitTime());
 
             if (!eventApplyInitiateService.collectedEnougthResponse()) {
-//                log.info(MARKET_LOG_PREFIX +
-//                        "Did not collect enough broadcast responses for transaction:" +
-//                        transaction.getTransactionId() +
-//                        "rolling back now.");
+
+                log.info(MARKET_LOG_PREFIX +
+                        "Did not collect enough broadcast responses for transaction:" +
+                        transaction.getTransactionId() +
+                        "rolling back now.");
 //
 //                MarketTransaction rollbackTransaction = new MarketTransaction();
 //
@@ -186,6 +200,7 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
 //                eventApplyInitiateService.rollback(() -> rollbackeMarketTransaction(rollBackLogItem));
             }
 
+            log.info(MARKET_LOG_PREFIX +"Now committing transaction: " + transaction);
             eventApplyInitiateService.commit();
             resultResponse.setMessage(TRADER_SUCCESS_MESSAGE);
             resultResponse.setTransaction(transaction);
@@ -193,7 +208,7 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
             tradeToDb(transaction);
             log.info(MARKET_LOG_PREFIX +
                     "Transaction: " +
-                    transaction.toString() +
+                    transaction +
                     "\nhas been committed");
 
             break;
@@ -207,6 +222,7 @@ public class TradingLaunchServiceImpl implements TradingLaunchService {
     }
 
     private void tradeToDb(MarketTransaction transaction) {
+        log.info(MARKET_LOG_PREFIX +"Now saving to db:");
         TradingDbService tradingDbService = new TradingDbServiceImpl();
         MarketTransactionResultResponse resultResponse = tradingDbService.tradDb(transaction);
 

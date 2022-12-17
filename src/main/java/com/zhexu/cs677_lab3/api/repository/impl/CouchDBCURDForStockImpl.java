@@ -6,6 +6,7 @@ import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLog
 import com.zhexu.cs677_lab3.api.repository.CouchDBCURDForStock;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.DocumentNotFoundException;
+import org.ektorp.UpdateConflictException;
 import org.ektorp.support.CouchDbRepositorySupport;
 
 /**
@@ -25,7 +26,11 @@ public class CouchDBCURDForStockImpl extends CouchDbRepositorySupport<Stock> imp
         if (null != stockInDb){
             return stockInDb;
         }
-        add(stock);
+        try {
+            add(stock);
+        } catch (UpdateConflictException e){
+            return getStockById(stock.getSellerId());
+        }
 
         return getStockById(stock.getSellerId());
     }

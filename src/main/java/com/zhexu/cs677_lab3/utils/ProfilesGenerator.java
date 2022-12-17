@@ -131,10 +131,12 @@ public class ProfilesGenerator {
         traderList.forEach((e) -> {
             e.setProducts(productMap);
             e.setStock(stockMap);
+            e.becomeFollower();
         });
 
         sellerBuyerList.forEach((e) -> {
             e.setProducts(productMap);
+            e.setStock(stockMap);
         });
 
         traderList.addAll(sellerBuyerList);

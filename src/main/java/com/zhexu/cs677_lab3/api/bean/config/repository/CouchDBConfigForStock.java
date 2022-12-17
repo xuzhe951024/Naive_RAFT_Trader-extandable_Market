@@ -42,13 +42,10 @@ public class CouchDBConfigForStock {
         builder.password(couchDBInfoForStock.getPassword());
         HttpClient httpClient = builder.build();
         CouchDbInstance couchDbInstance = new StdCouchDbInstance(httpClient);
-        CouchDbConnector couchDbConnector = new StdCouchDbConnector(couchDBInfoForStock.getDatabase() +
-                "_" +
-                SingletonFactory.getRole().getSelfAddress().getDomain().replace(".", "_"),
+        CouchDbConnector couchDbConnector = new StdCouchDbConnector(couchDBInfoForStock.getDatabase(),
                 couchDbInstance);
         couchDbConnector.createDatabaseIfNotExists();
 
-        //TODO implement bean
         CouchDBCURDForStock couchDBCURDForStock = new CouchDBCURDForStockImpl(Stock.class, couchDbConnector, true);
         log.info("CouchDb Connector for stock injection successful!");
         return couchDBCURDForStock;

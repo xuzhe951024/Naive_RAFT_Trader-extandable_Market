@@ -9,5 +9,5 @@ import java.util.UUID;
  * @create: 12/10/22
  **/
 public interface EventHandler {
-    public Boolean run(Object eventBean, UUID logId, UUID eventId) throws Exception;
+    Boolean run(Object eventBean, UUID logId, UUID eventId) throws Exception;
 }

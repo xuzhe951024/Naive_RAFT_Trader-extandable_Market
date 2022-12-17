@@ -83,7 +83,7 @@ public class RaftTransBase implements Serializable {
     }
 
     public Boolean termAndIndexGreaterThanZero() {
-        return this.index.longValue() >= 0l && this.term.longValue() >= 0l;
+        return this.index.longValue() >= 0L && this.term.longValue() >= 0L;
     }
 
     public String generateDocumentId(){

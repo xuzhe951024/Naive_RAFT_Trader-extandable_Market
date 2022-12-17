@@ -10,11 +10,11 @@ import com.zhexu.cs677_lab3.api.bean.basic.dataEntities.raftLogMatenance.RaftLog
  * @create: 12/4/22
  **/
 public interface EventApplyInitiateService<T> {
-    public void setLogItem(RaftLogItem logItem);
+    void setLogItem(RaftLogItem logItem);
 
-    public void broardCast() throws JsonProcessingException;
-    public Boolean collectedEnougthResponse();
-    public void commit() throws Exception;
-    public void rollback(RollbackMethod rollbackMethod) throws JsonProcessingException;
-    public void cleanMessageBroadCastMap ();
+    void broardCast() throws JsonProcessingException;
+    Boolean collectedEnougthResponse();
+    void commit() throws Exception;
+    void rollback(RollbackMethod rollbackMethod) throws JsonProcessingException;
+    void cleanMessageBroadCastMap ();
 }

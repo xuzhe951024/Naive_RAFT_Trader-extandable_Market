@@ -58,7 +58,7 @@ public class LaunchMarket implements CommandLineRunner {
             @Override
             public void run() {
 
-                if (SingletonFactory.getTransactionNum() >= SingletonFactory.getTestNum()){
+                if (SingletonFactory.getTransactionNum() >= SingletonFactory.getTestNum()) {
                     log.info(IMPORTANT_LOG_WRAPPER);
                     log.info("finished !");
                     log.info(IMPORTANT_LOG_WRAPPER);
@@ -66,32 +66,33 @@ public class LaunchMarket implements CommandLineRunner {
                 }
                 startBusiness();
 
+
             }
         };
 
         tradingTimer.schedule(sendHeartPulseTask, sleepBeforeStart, ONE_THOUSAND);
     }
 
-    private Boolean startBusiness(){
+    private Boolean startBusiness() {
         if (role.isARaftMember()
                 || null == role.getNeighbourPeerMap()
-                || role.getNeighbourPeerMap().isEmpty()){
+                || role.getNeighbourPeerMap().isEmpty()) {
             return Boolean.FALSE;
         }
 
         role.getNeighbourPeerMap().forEach((k, v) -> {
-            RPCInvocationHandler handler = new RPCInvocationHandler(role.getNeighbourAdd(role.getLeaderID()));
+            RPCInvocationHandler handler = new RPCInvocationHandler(v);
             TradingLaunchService tradingLaunchService = ProxyFactory.getInstance(TradingLaunchService.class, handler);
 
             Random random = new Random();
             MarketTransaction transaction = new MarketTransaction();
 
-            if (role.isBuyer()){
+            if (role.isBuyer()) {
                 transaction.setBuyer(role.getId());
                 transaction.setNumber(random.nextInt(SingletonFactory.getMaxStock()));
             }
 
-            if (role.isSeller()){
+            if (role.isSeller()) {
                 transaction.setBuyer(role.getId());
                 transaction.setSeller(role.getId());
                 transaction.setNumber(-SingletonFactory.getMaxStock());
@@ -99,10 +100,7 @@ public class LaunchMarket implements CommandLineRunner {
 
             transaction.setProduct(role.getProductMap().get(random.nextInt(role.getProductMapSize())));
 
-            log.info("Start to send purchase request to leader: " +
-                    role.getLeaderID() +
-                    "@" +
-                    role.getNeighbourAdd(role.getLeaderID()).getDomain());
+            log.info("Start to send purchase request to trader: " + v.getDomain());
 
             log.info(tradingLaunchService.launchTradingTransaction(transaction));
         });

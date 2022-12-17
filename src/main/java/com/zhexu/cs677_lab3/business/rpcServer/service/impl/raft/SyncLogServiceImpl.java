@@ -94,14 +94,14 @@ public class SyncLogServiceImpl implements SyncLogService {
                             raftLogItemList.size());
                 } else {
                     log.debug("log not found:\n" +
-                            capture.toString());
+                            capture);
                 }
                 capture.increaseIndex();
             }
             capture.increaseTerm();
         }
 
-        log.debug("Log sync list assembled: " + raftLogItemList.toString());
+        log.debug("Log sync list assembled: " + raftLogItemList);
 
         RPCInvocationHandler handler = new RPCInvocationHandler(peer.getNeighbourAdd(capture.getApplierId()));
         ReceiveSyncDataService receiveSyncDataService = ProxyFactory.getInstance(ReceiveSyncDataService.class, handler);

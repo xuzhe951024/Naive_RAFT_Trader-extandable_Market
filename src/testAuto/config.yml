@@ -4,7 +4,7 @@ sellerNumber: 3
 buyerNumber: 3
 port: 2121
 deployOnSingleComputer: false
-sleepBeforeStart: 10000
+sleepBeforeStart: 30000
 numberOfTests: 20
 
 

@@ -16,7 +16,7 @@ import java.io.IOException;
  **/
 public class ProductDeSerializer extends KeyDeserializer {
     @Override
-    public Product deserializeKey(String s, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public Product deserializeKey(String s, DeserializationContext deserializationContext) throws IOException {
         return new Product(s);
     }
 }

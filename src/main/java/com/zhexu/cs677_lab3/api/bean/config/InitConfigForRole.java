@@ -1,6 +1,7 @@
 package com.zhexu.cs677_lab3.api.bean.config;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.zhexu.cs677_lab3.api.bean.basic.Product;
@@ -10,8 +11,7 @@ import com.zhexu.cs677_lab3.utils.ProductDeSerializer;
 
 import java.util.Map;
 
-import static com.zhexu.cs677_lab3.constants.RoleConsts.MARKET_BUYER;
-import static com.zhexu.cs677_lab3.constants.RoleConsts.MARKET_SELLER;
+import static com.zhexu.cs677_lab3.constants.RoleConsts.*;
 
 /**
  * @project: CS677_Lab1
@@ -19,6 +19,7 @@ import static com.zhexu.cs677_lab3.constants.RoleConsts.MARKET_SELLER;
  * @author: zhexu
  * @create: 10/27/22
  **/
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InitConfigForRole extends InitConfigBasic {
     private String positionName;
     @JsonProperty("stock")
@@ -65,5 +66,9 @@ public class InitConfigForRole extends InitConfigBasic {
 
     public void becomeSeller() {
         setPositionName(MARKET_SELLER);
+    }
+
+    public void becomeFollower(){
+        setPositionName(RAFT_ROLE_FOLLOWER);
     }
 }
