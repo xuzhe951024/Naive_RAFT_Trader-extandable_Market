@@ -4,7 +4,7 @@
 
 ## Overall designing
 
-![Note Dec 16, 2022](src/main/resources/static/overallDesigning.png)
+![Note Dec 16, 2022](src/main/resources/static/OverallDesigning.png)
 
 1. Traders are implemented as a RAFT cluster. Clients(buyers/sellers) connect to peers in the RAFT cluster to launch a transaction
 2. The seller sends a transaction with a purchase number smaller than 0 to restock. (-(-x) == +x)
